@@ -1,0 +1,68 @@
+<div style="padding: 30px; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 700px; margin: auto; border: 1px solid #ccc; border-radius: 10px;">
+    <div style="text-align: center; padding-bottom: 20px;">
+        <h2 style="margin: 0; color: #2b7bba;">Booking Confirmation</h2>
+        <p style="margin: 5px 0; color: #777;">Thank you for choosing our service</p>
+    </div>
+
+    <hr style="margin: 20px 0; border-color: #ddd;">
+
+    <table style="width: 100%; font-size: 15px; line-height: 1.6;">
+        <tr>
+            <td><strong style="color: #444;">Booking ID:</strong></td>
+            <td>{{ doc.name }}</td>
+        </tr>
+        <tr>
+            <td><strong style="color: #444;">Customer Name:</strong></td>
+            <td>{{ doc.customer_name }}</td>
+        </tr>
+        <tr>
+            <td><strong style="color: #444;">Service Type:</strong></td>
+            <td>{{ doc.service_type }}</td>
+        </tr>
+        <tr>
+            <td><strong style="color: #444;">Preferred Date & Time:</strong></td>
+            <td>
+                {% if doc.preferred_date_time %}
+                    {{ doc.preferred_date_time.strftime('%d-%m-%Y %I:%M %p') }}
+                {% else %}
+                    Not Provided
+                {% endif %}
+            </td>
+        </tr>
+        <tr>
+            <td><strong style="color: #444;">Status:</strong></td>
+            <td style="color: green;"><strong>{{ doc.status }}</strong></td>
+        </tr>
+    </table>
+
+    <hr style="margin: 30px 0; border-color: #ddd;">
+
+    {% set address = frappe.db.get_value("Dynamic Link", {
+        "link_doctype": "Customer",
+        "link_name": doc.customer_name,
+        "parenttype": "Address"
+    }, "parent") %}
+
+    {% if address %}
+        {% set address_doc = frappe.get_doc("Address", address) %}
+        <div style="margin-top: 20px;">
+            <h4 style="margin-bottom: 10px; color: #2b7bba;">Customer Address</h4>
+            <p style="margin: 0;">
+                {{ address_doc.address_line1 or "" }}<br>
+                {{ address_doc.address_line2 or "" }}<br>
+                {{ address_doc.city or "" }} {{ address_doc.pincode or "" }}<br>
+                {{ address_doc.state or "" }}, {{ address_doc.country or "" }}
+            </p>
+            {% if address_doc.email_id %}
+                <p style="margin-top: 10px;"><strong>Email:</strong> {{ address_doc.email_id }}</p>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <hr style="margin: 30px 0; border-color: #ddd;">
+
+    <p style="text-align: center; color: #666; font-size: 13px;">
+        For any questions, feel free to contact us.<br>
+        <strong>We look forward to serving you!</strong>
+    </p>
+</div>

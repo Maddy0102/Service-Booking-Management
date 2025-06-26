@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Service Booking</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #e0f7fa, #80deea);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .booking-container {
+      background-color: #ffffff;
+      padding: 30px 40px;
+      border-radius: 12px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      width: 100%;
+      max-width: 500px;
+    }
+
+    h2, h3 {
+      text-align: center;
+      color: #00796b;
+    }
+
+    label {
+      font-weight: 500;
+      display: block;
+      margin-top: 15px;
+      margin-bottom: 5px;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="datetime-local"],
+    select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      box-sizing: border-box;
+    }
+
+    input[type="checkbox"] {
+      margin-right: 8px;
+    }
+
+    button {
+      margin-top: 20px;
+      width: 100%;
+      padding: 12px;
+      background-color: #00796b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background-color: #004d40;
+    }
+
+    datalist {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="booking-container">
+    <h2>Book a Service</h2>
+
+    <label>
+      <input type="checkbox" id="existing-customer" />
+      I am an existing customer
+    </label>
+
+    <div>
+      <label>Customer Name</label>
+      <input type="text" id="customer-name" />
+    </div>
+
+    <div>
+      <label>Email</label>
+      <input type="email" id="email" />
+    </div>
+
+    <div>
+      <label>Phone</label>
+      <input type="text" id="phone" />
+    </div>
+
+    <h3>Address</h3>
+    <div>
+      <input type="text" id="address-line1" placeholder="Address Line 1" />
+    </div>
+    <div>
+      <input type="text" id="address-line2" placeholder="City / State" />
+    </div>
+
+    <h3>Service Booking</h3>
+    <div>
+      <label>Service Type</label>
+      <select id="service-type">
+        <option value="Therapy">Therapy</option>
+        <option value="Spa">Spa</option>
+        <option value="Others">Others</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Preferred Date/Time</label>
+      <input type="datetime-local" id="preferred-datetime" />
+    </div>
+
+    <button id="submit-booking">Submit Booking</button>
+
+    <datalist id="customers"></datalist>
+  </div>
+
+  <script>
+    const existingCustomer = document.getElementById("existing-customer");
+    const customerNameField = document.getElementById("customer-name");
+    const emailField = document.getElementById("email");
+    const phoneField = document.getElementById("phone");
+    const address1 = document.getElementById("address-line1");
+    const address2 = document.getElementById("address-line2");
+    const serviceType = document.getElementById("service-type");
+    const preferredDateTime = document.getElementById("preferred-datetime");
+    const submitBtn = document.getElementById("submit-booking");
+
+    existingCustomer.addEventListener("change", () => {
+      const isExisting = existingCustomer.checked;
+      if (isExisting) {
+        customerNameField.setAttribute("list", "customers");
+        fetchCustomers();
+      } else {
+        customerNameField.removeAttribute("list");
+        emailField.value = "";
+        phoneField.value = "";
+        address1.value = "";
+        address2.value = "";
+      }
+    });
+
+    customerNameField.addEventListener("change", async () => {
+      if (!existingCustomer.checked) return;
+
+      const name = customerNameField.value;
+
+      try {
+        const customer = await fetch(`/api/resource/Customer/${name}`);
+        const custData = await customer.json();
+        const data = custData.data || {};
+
+        const addressRes = await fetch("/api/method/booking_management.api.get_customer_address", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ customer_name: name })
+        });
+
+        const addr = await addressRes.json();
+        const address = addr.message || {};
+
+        address1.value = address.address_line1 || "";
+        address2.value = address.address_line2 || "";
+        emailField.value = address.email || "";
+        phoneField.value = address.phone || "";
+      } catch (err) {
+        console.error("Error fetching customer info", err);
+      }
+    });
+
+    async function fetchCustomers() {
+      const res = await fetch("/api/resource/Customer?fields=[\"name\"]");
+      const data = await res.json();
+      let list = document.getElementById("customers");
+      list.innerHTML = "";
+      data.data.forEach(cust => {
+        const opt = document.createElement("option");
+        opt.value = cust.name;
+        list.appendChild(opt);
+      });
+    }
+
+    submitBtn.addEventListener("click", async () => {
+        const payload = {
+            customer_name: customerNameField.value,
+            email: emailField.value,
+            phone: phoneField.value,
+            address_line1: address1.value,
+            address_line2: address2.value,
+            service_type: serviceType.value,
+            preferred_datetime: preferredDateTime.value,
+            is_existing_customer: existingCustomer.checked
+        };
+
+        try {
+            const res = await fetch("/api/method/booking_management.api.create_service_booking", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ data: JSON.stringify(payload) })
+            });
+
+            const result = await res.json();
+            console.log("Server response:", result);
+
+            if (res.ok && result.message) {
+            const bookingId = result.message.booking_id || "N/A";
+            alert(`Booking requested successfully!\nBooking ID: ${bookingId}`);
+            } else {
+            alert("Failed to create booking.");
+            }
+        } catch (err) {
+            alert("Error occurred");
+            console.error(err);
+        }
+        });
+  </script>
+</body>
+</html>
