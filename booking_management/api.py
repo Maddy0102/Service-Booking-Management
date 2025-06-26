@@ -1,6 +1,7 @@
 import frappe
 from frappe.model.document import Document
 import json
+import requests
 
 @frappe.whitelist(allow_guest=True)
 def create_service_booking(data):
@@ -46,7 +47,27 @@ def create_service_booking(data):
         "preferred_datetime": preferred_datetime,
         "status": "Requested"
     }).insert(ignore_permissions=True)
+    
+    webhook_url = "https://eom082kotax6urw.m.pipedream.net"
+    payload = {
+        "customer_name": customer_name,
+        "email": email,
+        "phone": phone,
+        "address_line1": address_line1,
+        "address_line2": address_line2,
+        "service_type": service_type,
+        "preferred_datetime": preferred_datetime,
+        "status": "Requested",
+        "booking_id": booking.name
+    }
 
+    try:
+        response = requests.post(webhook_url, json=payload)
+        if response.status_code != 200:
+            frappe.log_error(response.text, "Webhook Failed")
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "Webhook Exception")
+        
     return {
         "message": "Booking requested successfully!",
         "booking_id": booking.name
