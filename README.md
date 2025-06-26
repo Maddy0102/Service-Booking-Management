@@ -8,25 +8,20 @@ You can install this app using the [bench](https://github.com/frappe/bench) CLI:
 
 ```bash
 cd $PATH_TO_YOUR_BENCH
-bench get-app $URL_OF_THIS_REPO --branch develop
+bench get-app https://github.com/Maddy0102/Service-Booking-Management.git --branch develop
 bench install-app booking_management
 ```
 
-### Contributing
+### Documentation
+https://docs.google.com/document/d/104DrK4B5L4CtTzGUaTWIJDC_6u3vXPUc82nuXBgybzc/edit?usp=sharing
 
-This app uses `pre-commit` for code formatting and linting. Please [install pre-commit](https://pre-commit.com/#installation) and enable it for this repository:
+### System Info
 
-```bash
-cd apps/booking_management
-pre-commit install
-```
+○ OS (Ubuntu 22.04)
+○ Python version --- Python 3.10.12
+○ ERPNext/Frappe version -- erpnext 15.65.4 / frappe 15.71.0
+○ Editors used (VS Code)
 
-Pre-commit is configured to use the following tools for checking and formatting your code:
-
-- ruff
-- eslint
-- prettier
-- pyupgrade
 
 ### CI
 
