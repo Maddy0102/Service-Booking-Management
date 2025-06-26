@@ -1,0 +1,95 @@
+<!-- <h2>Book a Service</h2>
+
+<form id="lookup-form">
+  <input type="email" id="email" placeholder="Enter your email" required />
+  <button type="submit">Start Booking</button>
+</form>
+
+<hr>
+
+<div id="booking-form-wrapper" style="display:none;">
+  <form id="full-booking-form">
+    <div id="customer-section">
+      <h4>Customer Info</h4>
+      <input type="text" name="customer_name" placeholder="Customer Name" required><br>
+      <input type="text" name="phone" placeholder="Phone" required><br>
+    </div>
+
+    <div id="address-section">
+      <h4>Address Info</h4>
+      <input type="text" name="address_line1" placeholder="Address Line 1" required><br>
+      <input type="text" name="city" placeholder="City" required><br>
+      <input type="text" name="state" placeholder="State"><br>
+      <input type="text" name="country" placeholder="Country" required><br>
+    </div>
+
+    <h4>Booking Info</h4>
+    <input type="hidden" name="email" id="email_hidden">
+    <select name="service_type" required>
+      <option value="">Select Service</option>
+      <option value="Repair">Repair</option>
+      <option value="Installation">Installation</option>
+      <option value="Others">Others</option>
+    </select><br>
+    <input type="datetime-local" name="preferred_date_time" required><br><br>
+
+    <button type="submit">Confirm Booking</button>
+  </form>
+</div>
+
+<div id="response" style="margin-top: 20px; font-weight: bold;"></div>
+
+<script>
+let existing_customer = false;
+let customer_name = "";
+
+document.getElementById("lookup-form").onsubmit = async function(e) {
+  e.preventDefault();
+  const email = document.getElementById("email").value;
+  document.getElementById("email_hidden").value = email;
+
+  const res = await fetch(`/api/method/frappe.client.get_list?doctype=Customer&filters=[["email_id","=","${email}"]]&fields=["name"]`);
+  const data = await res.json();
+
+  document.getElementById("booking-form-wrapper").style.display = "block";
+  if (data.message.length) {
+    existing_customer = true;
+    customer_name = data.message[0].name;
+    document.getElementById("customer-section").style.display = "none";
+    document.getElementById("address-section").style.display = "none";
+  } else {
+    existing_customer = false;
+    customer_name = "";
+    document.getElementById("customer-section").style.display = "block";
+    document.getElementById("address-section").style.display = "block";
+  }
+}
+
+document.getElementById("full-booking-form").onsubmit = async function(e) {
+  e.preventDefault();
+  const form = e.target;
+  const formData = new FormData(form);
+  const data = {};
+  formData.forEach((v, k) => data[k] = v);
+
+  let res;
+  if (existing_customer) {
+    data.customer = customer_name;
+    res = await fetch('/api/method/booking_management.api.create_booking_for_existing', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: JSON.stringify(data) })
+    });
+  } else {
+    res = await fetch('/api/method/booking_management.api.create_full_booking', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: JSON.stringify(data) })
+    });
+  }
+
+  const result = await res.json();
+  document.getElementById("response").innerText = result.message || "Something went wrong!";
+  form.reset();
+};
+</script> -->

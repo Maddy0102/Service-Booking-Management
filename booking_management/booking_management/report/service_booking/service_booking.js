@@ -1,13 +1,18 @@
 // Copyright (c) 2025, maddy and contributors
 // For license information, please see license.txt
 
-frappe.query_reports["Service Booking Report"] = {
+frappe.query_reports["Service Booking"] = {
 	"filters": [
 		{
 			fieldname: "service_type",
 			label: "Service Type",
-			fieldtype: "Link",
-			options: "Service Type",
+			fieldtype: "Select",
+			options: [
+				"",
+				"Therapy",
+				"Spa",
+				"Others"
+			],
 			reqd: 0
 		},
 		{
@@ -18,7 +23,7 @@ frappe.query_reports["Service Booking Report"] = {
 				"",
 				"Requested",
 				"Approved",
-				"Completed",
+				"Completed"
 			],
 			reqd: 0
 		}
